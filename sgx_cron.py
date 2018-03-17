@@ -1,4 +1,5 @@
 import requests
+import os
 from datetime import date, timedelta
 from pymongo import MongoClient, ASCENDING
 from datetime import datetime, timedelta
@@ -76,7 +77,7 @@ def format_data(data, filter):
 
 # returns MongoClient collection
 def get_db(database, collection, username, password, port="27017", host="localhost"):
-    uri = "mongodb://{}:{}@{}:{}".format(username, password, host, port)
+    uri = "mongodb://{}:{}@{}:{}/{}".format(username, password, host, port, database)
     client = MongoClient(uri)
     db = client[database]
     collection = db[collection]
@@ -95,9 +96,9 @@ data = scrap(data_url)
 data = format_data(data, data_labels)
 
 # get mongo auth credentials
-with open ("password.txt", 'r') as pw:
+with open (os.path.dirname(os.path.realpath(__file__)) + "/password.txt", 'r') as pw:
     global username, password
-    read = pw.readline().split(":")
+    read = pw.readline().rstrip().split(":")
     username = read[0]
     password = read[1]
 
