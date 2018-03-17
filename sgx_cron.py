@@ -100,7 +100,6 @@ with open ("password.txt", 'r') as pw:
     read = pw.readline().split(":")
     username = read[0]
     password = read[1]
-    print(username, password)
 
 # get mongo collections
 db_data = get_db(database, "data", username, password)
@@ -115,7 +114,7 @@ if db_date.find_one() == None:
 # add data to db
 currently_open = set() # for testing
 # trading work days are between Monday to Friday
-if current_datetime.weekday() <= 5:
+if current_datetime.weekday() <= 4:
     for d in data:
         date = db_date.find_one({"contract": d["contract"]})
         query = {"contract": d["contract"], "trade_session": d["trade_session"], "contract_month": d["contract_month"]}
