@@ -52,6 +52,9 @@ def format_data(data, filter):
                     # if field is not blank
                     if v != "-":
                         v = float(v[:-2]+'.'+v[-2:])
+                # convert contract month to YYYY-MM format
+                if _k == "contract_month":
+                    v = "".join(v.split(" "))
                 # convert trading hours to 24 hour format
                 if _k == "trading_hours" or _k == "trading_hours_1":
                     v = v.strip("SGX (T+1) Trading Hours: Mon - Fri") 
@@ -134,24 +137,24 @@ if current_datetime.weekday() <= 4:
             trading_hours_1[1] += timedelta(hours=24)
         # add data to db if current time is within trading hours
         if trading_hours[0] < current_datetime < trading_hours[1] or\
-        trading_hours_1[0] < current_datetime < trading_hours_1[1]:
+           trading_hours_1[0] < current_datetime < trading_hours_1[1]:
             currently_open.add(d["contract"])
             if db_data.find_one(query) is not None:
-                    # update document if it already exists
-                    db_data.update(query, {"$push": to_push})
+                # update document if it already exists
+                db_data.update(query, {"$push": to_push})
             else:
-                    # create document if it does not exist
-                    d["high"] = [d["high"]]
-                    d["low"] = [d["low"]]
-                    d["last_trade_price"] = [d["last_trade_price"]]
-                    d["date_tracked"] = [d["date_tracked"]]
-                    d["daily"] = {}
-                    db_data.insert_one(d)
+                # create document if it does not exist
+                d["high"] = [d["high"]]
+                d["low"] = [d["low"]]
+                d["last_trade_price"] = [d["last_trade_price"]]
+                d["date_tracked"] = [d["date_tracked"]]
+                d["daily"] = {}
+                db_data.insert_one(d)
         # save daily high, low and last_trade_prices if outside of trading hours
         else:
             current_date = str(current_datetime.day) + "-" + str(current_datetime.month) + "-" + str(current_datetime.year)
-            to_push["date"] = current_date
-            db_data.update(query, {"$set": {"daily": to_push}})
+            to_push["date_tracked"] = current_date
+            db_data.update(query, {"$set": {"daily.{}".format(current_date): to_push}})
 
 print(currently_open)
 print(len(currently_open))
